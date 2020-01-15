@@ -26,28 +26,36 @@ import os
 
 # try: curl -v -X GET http://127.0.0.1:8080/
 
+# Author: lappet
+# Discussion topic: serve html page via socketserver
+# URL: https://stackoverflow.com/questions/47726865/html-page-not-displaying-using-python-socket-programming
+# Usage in code: Inspired by this answer on how to send the content of a file through the socketserver
+#
+# Author: valentin
+# Discussion topic: parse encoded data
+# URL: https://stackoverflow.com/questions/29643544/python-a-bytes-like-object-is-required-not-str
+# Usage in code: Referred to this post on how to decode and parse data
+# Reference for HTTP status code
+# https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#4xx_Client_errors
+# Function to check the prefix of a string. 
+# https://www.tutorialspoint.com/python/string_startswith.htm
 
 class MyWebServer(socketserver.BaseRequestHandler):
     def handle(self):
         self.data = self.request.recv(1024).strip()
-        # print("Got a request of: %s\n" % self.data)
-        # https://stackoverflow.com/questions/47726865/html-page-not-displaying-using-python-socket-programming
-        # https://stackoverflow.com/questions/29643544/python-a-bytes-like-object-is-required-not-str
         data = self.data.decode().split('\r\n')
         http_request = data[0].split()
         for i in data:
-            # https://www.tutorialspoint.com/python/string_startswith.htm
             if i.startswith("Host: "):
                 host = "http://"+i[6:]
                 break
         if len(http_request) != 3 or http_request[0] != "GET":
-            msg = "HTTP/1.1 405 Method Not Allowed\nContent-Type: text/html\n\n"
+            msg = "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: text/html\r\n\r\n"
             self.request.sendall(msg.encode())
         http_request = http_request[1]
         root = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'www')
-        # print(http_request)
         if os.path.isfile(root+os.path.abspath(http_request)):
-            msg = "HTTP/1.1 200 OK\nContent-Type: {}\n\n"
+            msg = "HTTP/1.1 200 OK\r\nContent-Type: {}\r\n\r\n"
             if http_request[-4:] == ".css":
                 msg = msg.format("text/css")
                 content = open(root+http_request).read()
@@ -61,24 +69,23 @@ class MyWebServer(socketserver.BaseRequestHandler):
         elif os.path.isdir(root+os.path.abspath(http_request)):
             if http_request[-1] != "/":
                 new = host + http_request + "/"
-                msg = "HTTP/1.1 301 Moved Permanently\nLocation: {}\n\n".format(new)
+                msg = "HTTP/1.1 301 Moved Permanently\r\nLocation: {}\r\n\r\n".format(
+                    new)
                 self.request.sendall(msg.encode())
             content = open(os.path.join(
                 root+http_request, "index.html")).read()
-            msg = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n"
+            msg = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
             msg = msg + content
             self.request.sendall(msg.encode())
         else:
-            #https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#4xx_Client_errors
-            msg = "HTTP/1.1 404 Not Found\nContent-Type: text/html\n\n"
+            msg = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n"
             content = """
                 <html>
                 <body>
-                <h2></h2><h1>Not Found</h1> The requested URL/{} was not found on this server.
+                <h2></h2><h1>Not Found</h1> The requested URL{} was not found on this server.
                 </body>
                 </html>
             """.format(http_request)
-
             msg = msg + content
             self.request.sendall(msg.encode())
 
