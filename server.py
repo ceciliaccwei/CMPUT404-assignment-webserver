@@ -63,17 +63,17 @@ class MyWebServer(socketserver.BaseRequestHandler):
         if os.path.isfile(root+os.path.abspath(http_request)):
             # format the response header when the request is valid
             # HTTP code 200 OK
-            msg = "HTTP/1.1 200 OK\r\nContent-Type: {}\r\n\r\n"
+            msg = "HTTP/1.1 200 OK\r\nContent-Type: {}\r\nContent-Length: {}\r\n\r\n"
             # MIME type for css file
             if http_request[-4:] == ".css":
-                msg = msg.format("text/css")
                 content = open(root+http_request).read()
+                msg = msg.format("text/css", len(content))
                 msg = msg + content
                 self.request.sendall(msg.encode())
             # MIME type for html file
             elif http_request[-5:] == ".html":
-                msg = msg.format("text/html")
                 content = open(root+http_request).read()
+                msg = msg.format("text/html", len(content))
                 msg = msg + content
                 self.request.sendall(msg.encode())
         # find the directory
@@ -87,7 +87,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
             # HTTP code 200
             content = open(os.path.join(
                 root+http_request, "index.html")).read()
-            msg = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
+            msg = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {}\r\n\r\n"
+            msg = msg.format(len(content))
             msg = msg + content
             self.request.sendall(msg.encode())
         # if no such directory/file
