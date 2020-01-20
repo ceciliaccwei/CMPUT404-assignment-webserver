@@ -35,8 +35,10 @@ import os
 # Discussion topic: parse encoded data
 # URL: https://stackoverflow.com/questions/29643544/python-a-bytes-like-object-is-required-not-str
 # Usage in code: Referred to this post on how to decode and parse data
+#
 # Reference for HTTP status code
 # https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#4xx_Client_errors
+#
 # Function to check the prefix of a string. 
 # https://www.tutorialspoint.com/python/string_startswith.htm
 
