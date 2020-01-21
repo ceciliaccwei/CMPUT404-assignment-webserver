@@ -56,7 +56,15 @@ class MyWebServer(socketserver.BaseRequestHandler):
         # if the http header is invalid
         # or if the method is not allowed
         if len(http_request) != 3 or http_request[0] != "GET":
-            msg = "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: text/html\r\n\r\n"
+            msg = "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: text/html\r\nContent-Length: {}\r\n\r\n"
+            content = """
+                <html>
+                <body>
+                <h2></h2><h1>405 Not Allowed</h1>
+                </body>
+                </html>"""
+            msg = msg.format(len(content))
+            msg = msg + content
             self.request.sendall(msg.encode())
         # get the requested path
         http_request = http_request[1]
@@ -95,14 +103,14 @@ class MyWebServer(socketserver.BaseRequestHandler):
             self.request.sendall(msg.encode())
         # if no such directory/file
         else:
-            msg = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n"
+            msg = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: {}\r\n\r\n"
             content = """
                 <html>
                 <body>
-                <h2></h2><h1>Not Found</h1> The requested URL {} was not found on this server.
+                <h2></h2><h1>404 Not Found</h1> The requested URL was not found on this server.
                 </body>
-                </html>
-            """.format(http_request)
+                </html>"""
+            msg = msg.format(len(content))
             msg = msg + content
             self.request.sendall(msg.encode())
 
